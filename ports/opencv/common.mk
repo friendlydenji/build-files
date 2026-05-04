@@ -7,6 +7,8 @@ include $(MKFILES_ROOT)/qmacros.mk
 
 NAME=opencv
 
+CURRENT_DIR="$(pwd)"
+
 QNX_PROJECT_ROOT ?= $(PRODUCT_ROOT)/../../
 
 #$(INSTALL_ROOT_$(OS)) is pointing to $QNX_TARGET
@@ -55,10 +57,11 @@ CMAKE_MODULE_PATH := $(QNX_TARGET)/$(CPUVARDIR)/$(PREFIX)/lib/cmake;$(INSTALL_RO
 #Headers from INSTALL_ROOT need to be made available by default
 #because CMake and pkg-config do not necessary add it automatically
 #if the include path is "default"
-CFLAGS += -I$(INSTALL_ROOT)/$(CPUVARDIR)/$(PREFIX)/include -I$(INSTALL_ROOT)/$(PREFIX)/include \
-          -I$(QNX_TARGET)/$(CPUVARDIR)/$(PREFIX)/include -I$(QNX_TARGET)/$(PREFIX)/include \
+CFLAGS += -I$(INSTALL_ROOT)/$(CPUVARDIR)/$(PREFIX)/include \
+          -I$(QNX_TARGET)/$(CPUVARDIR)/$(PREFIX)/include \
           -isystem $(QNX_TARGET)/usr/include/c++/v1/ \
-          -D_QNX_SOURCE
+          -D_QNX_SOURCE \
+          -flax-vector-conversions \
 
 CMAKE_ARGS = -DCMAKE_TOOLCHAIN_FILE=$(PROJECT_ROOT)/qnx.nto.toolchain.cmake \
              -DCMAKE_INSTALL_PREFIX="$(PREFIX)" \
@@ -71,6 +74,7 @@ CMAKE_ARGS = -DCMAKE_TOOLCHAIN_FILE=$(PROJECT_ROOT)/qnx.nto.toolchain.cmake \
              -DEXTRA_CMAKE_CXX_FLAGS="$(CFLAGS)" \
              -DEXTRA_CMAKE_ASM_FLAGS="$(FLAGS)" \
              -DEXTRA_CMAKE_LINKER_FLAGS="$(LDFLAGS)" \
+             -DOPENCV_EXTRA_MODULES_PATH= $(CURRENT_DIR)/../../../opencv_contrib/modules \
              -DBUILD_SHARED_LIBS=1 \
              -DCMAKE_INSTALL_INCLUDEDIR=$(INSTALL_ROOT)/$(PREFIX)/include \
              -DOPENCV_OTHER_INSTALL_PATH=$(INSTALL_ROOT)/$(PREFIX)/share \
@@ -90,6 +94,9 @@ CMAKE_ARGS = -DCMAKE_TOOLCHAIN_FILE=$(PROJECT_ROOT)/qnx.nto.toolchain.cmake \
              -DOPENCV_TEST_DATA_INSTALL_PATH="/testdata" \
              -DOPENCV_PYTHON_INSTALL_TARGET=ON \
              -DOPENCV_PYTHON2_SKIP_DETECTION=ON \
+             -DBUILD_PROTOBUF=ON \
+             -DPROTOBUF_UPDATE_FILES=OFF \
+	     -DOPENCV_FORCE_3RDPARTY_LIBS=protobuf \
 
 ifndef NO_TARGET_OVERRIDE
 opencv_all:
