@@ -7,8 +7,6 @@ include $(MKFILES_ROOT)/qmacros.mk
 
 NAME=opencv
 
-CURRENT_DIR="$(pwd)"
-
 QNX_PROJECT_ROOT ?= $(PRODUCT_ROOT)/../../
 
 #$(INSTALL_ROOT_$(OS)) is pointing to $QNX_TARGET
@@ -57,15 +55,16 @@ CMAKE_MODULE_PATH := $(QNX_TARGET)/$(CPUVARDIR)/$(PREFIX)/lib/cmake;$(INSTALL_RO
 #Headers from INSTALL_ROOT need to be made available by default
 #because CMake and pkg-config do not necessary add it automatically
 #if the include path is "default"
-CFLAGS += -I$(INSTALL_ROOT)/$(CPUVARDIR)/$(PREFIX)/include \
-          -I$(QNX_TARGET)/$(CPUVARDIR)/$(PREFIX)/include \
+CFLAGS += -I$(INSTALL_ROOT)/$(CPUVARDIR)/$(PREFIX)/include -I$(INSTALL_ROOT)/$(PREFIX)/include \
+          -I$(QNX_TARGET)/$(CPUVARDIR)/$(PREFIX)/include -I$(QNX_TARGET)/$(PREFIX)/include \
           -isystem $(QNX_TARGET)/usr/include/c++/v1/ \
-          -D_QNX_SOURCE \
-          -flax-vector-conversions \
+          -D_QNX_SOURCE 
+
+MY_PATH = opencv/4.9.0/aarch64-qcc-qnx
 
 CMAKE_ARGS = -DCMAKE_TOOLCHAIN_FILE=$(PROJECT_ROOT)/qnx.nto.toolchain.cmake \
              -DCMAKE_INSTALL_PREFIX="$(PREFIX)" \
-             -DCMAKE_STAGING_PREFIX="$(INSTALL_ROOT)/$(CPUVARDIR)/$(PREFIX)" \
+             -DCMAKE_STAGING_PREFIX="$(INSTALL_ROOT)/$(CPUVARDIR)/$(MY_PATH)" \
              -DCMAKE_PROJECT_INCLUDE=$(PROJECT_ROOT)/project_hooks.cmake \
              -DCMAKE_MODULE_PATH="$(CMAKE_MODULE_PATH)" \
              -DCMAKE_FIND_ROOT_PATH="$(CMAKE_FIND_ROOT_PATH)" \
@@ -74,10 +73,9 @@ CMAKE_ARGS = -DCMAKE_TOOLCHAIN_FILE=$(PROJECT_ROOT)/qnx.nto.toolchain.cmake \
              -DEXTRA_CMAKE_CXX_FLAGS="$(CFLAGS)" \
              -DEXTRA_CMAKE_ASM_FLAGS="$(FLAGS)" \
              -DEXTRA_CMAKE_LINKER_FLAGS="$(LDFLAGS)" \
-             -DOPENCV_EXTRA_MODULES_PATH= $(CURRENT_DIR)/../../../opencv_contrib/modules \
-             -DBUILD_SHARED_LIBS=1 \
-             -DCMAKE_INSTALL_INCLUDEDIR=$(INSTALL_ROOT)/$(PREFIX)/include \
-             -DOPENCV_OTHER_INSTALL_PATH=$(INSTALL_ROOT)/$(PREFIX)/share \
+             -DBUILD_SHARED_LIBS=ON \
+  	     -DOPENCV_EXTRA_MODULES_PATH=${QNX_PROJECT_ROOT}/../opencv_contrib/modules \
+             -DBUILD_LIST=core,imgcodecs,imgproc,plot \
              -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
              -DCMAKE_NO_SYSTEM_FROM_IMPORTED=ON \
              -DCPU=$(CPU) \
@@ -97,6 +95,11 @@ CMAKE_ARGS = -DCMAKE_TOOLCHAIN_FILE=$(PROJECT_ROOT)/qnx.nto.toolchain.cmake \
              -DBUILD_PROTOBUF=ON \
              -DPROTOBUF_UPDATE_FILES=OFF \
 	     -DOPENCV_FORCE_3RDPARTY_LIBS=protobuf \
+	     -DWITH_JPEG=ON \
+	     -DWITH_PNG=ON \
+	     -DWITH_TIFF=ON \
+  	     -DWITH_OPENCL=OFF 
+	     
 
 ifndef NO_TARGET_OVERRIDE
 opencv_all:
